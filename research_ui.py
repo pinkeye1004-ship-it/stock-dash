@@ -86,29 +86,36 @@ def render_research(store, state, sample_mode):
     positions = st.session_state.get("account_snapshot", {}).get("positions", [])
     position_map = {p.get("code"): p for p in positions}
 
-    # Header / hero
+    # Generated reference layout: compact light dashboard with a persistent market workspace.
     st.markdown(
         '''
-<div class="px-topbar">
-  <div class="px-brand">
-    <div class="px-mark">↗</div>
-    <div>
-      <div class="px-brand-name">PlanX <span style="font-weight:500;color:#64748b">Stock Dashboard</span></div>
-      <div class="px-brand-sub">MARKET · PORTFOLIO · AI INSIGHT</div>
-    </div>
-  </div>
-  <div class="px-top-date">데이터 기준일 · 공식자료/저장자료</div>
+<div class="px-dashboard-head">
+  <div class="px-dashboard-brand">PlanX <span>Stock Dashboard</span></div>
+  <div class="px-search-pill">⌕&nbsp;&nbsp; 종목명, 종목코드, 기업명을 검색하세요</div>
+  <div class="px-head-meta">◌&nbsp;&nbsp; 데이터 기준일 · 공식자료/저장자료 &nbsp;&nbsp; ◉ 사용자</div>
+</div>
+<div class="px-dashboard-title">
+  <div class="eyebrow">PLANX · MARKET INTELLIGENCE</div>
+  <h1>투자의 현재를 한눈에</h1>
+  <p>시장 흐름 · 관심종목 · 수급 · 업종 · 투자 시그널을 하나의 화면에서 확인합니다.</p>
 </div>
 ''',
         unsafe_allow_html=True,
     )
-    hero("투자의 현재를 한눈에", "시장 흐름부터 관심종목, 수급, 업종, 투자 시그널까지 한 화면에서 확인합니다.", "PLANX · STOCK DASHBOARD")
 
-    # Market index strip: never fabricate live index values.
-    market_cols = st.columns(4, gap="small")
-    for col, name in zip(market_cols, ["KOSPI", "KOSDAQ", "S&P 500", "NASDAQ"]):
-        with col:
-            _market_card(name)
+    # Market index strip: values stay data-driven; unavailable values are never fabricated.
+    index_html = '<div class="px-index-grid">'
+    for name in ["KOSPI", "KOSDAQ", "S&P 500", "NASDAQ"]:
+        index_html += (
+            '<div class="px-market-card">'
+            '<div class="px-market-title">' + name + '</div>'
+            '<div class="px-market-value">연결 대기</div>'
+            '<div class="px-market-change px-flat">실시간 데이터 연결 필요</div>'
+            + _sparkline_html([])
+            + '</div>'
+        )
+    index_html += '</div>'
+    st.markdown(index_html, unsafe_allow_html=True)
 
     # Main grid
     left, middle, right = st.columns([1.55, 1.05, 1.0], gap="small")
@@ -147,7 +154,7 @@ def render_research(store, state, sample_mode):
                 unsafe_allow_html=True,
             )
             if frame is not None and not frame.empty:
-                st.line_chart(frame.set_index("date")["close"], height=265, use_container_width=True)
+                st.line_chart(frame.set_index("date")["close"], height=205, use_container_width=True)
             else:
                 st.info("가격 차트 대기 · 조사 결과에 가격 자료가 들어오면 이 영역에 추세 차트가 표시됩니다.")
         else:
@@ -250,6 +257,18 @@ def render_research(store, state, sample_mode):
         else:
             st.caption("조사 결과가 쌓이면 AI/핵심 요약 영역에 표시됩니다.")
         st.markdown('</div></div>', unsafe_allow_html=True)
+
+    # Reference-image lower-left promo tile.
+    st.markdown(
+        '''
+<div class="px-promo">
+  <strong>더 나은 투자를 위한 PlanX</strong>
+  <span>공식 데이터와 저장된 조사자료를 바탕으로 시장의 흐름을 빠르게 확인하세요.</span>
+</div>
+<div class="px-dashboard-footer">PlanX Stock Dashboard · Data to Insight.</div>
+''',
+        unsafe_allow_html=True,
+    )
 
     # Lower controls retain the original workflow without returning to the old hero page.
     st.markdown("### 종목 추가 · 상세 분석")
