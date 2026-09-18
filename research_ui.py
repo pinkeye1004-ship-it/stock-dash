@@ -7,153 +7,302 @@ import streamlit as st
 
 from ui_v2 import hero, card
 from automatic import brief
-from bi_view import theme, overview, detail, peers_chart
+from bi_view import overview, detail, peers_chart
 from chat_research import published, parse_bundle, trends, growth, request_text
 
 
+def _sparkline_html(values):
+    if not values:
+        values = [1, 2, 1, 3, 2, 4, 3]
+    lo, hi = min(values), max(values)
+    span = hi - lo or 1
+    bars = []
+    for v in values[-18:]:
+        h = 18 + int((v - lo) / span * 48)
+        bars.append(f'<i style="height:{h}px"></i>')
+    return '<div class="px-mini-chart">' + ''.join(bars) + '</div>'
+
+
+def _market_card(name, value="연결 대기", change="실시간 데이터 연결 필요", tone="px-flat", values=None):
+    st.markdown(
+        f'''
+<div class="px-market-card">
+  <div class="px-market-title">{name}</div>
+  <div class="px-market-value">{value}</div>
+  <div class="px-market-change {tone}">{change}</div>
+  {_sparkline_html(values or [])}
+</div>
+''',
+        unsafe_allow_html=True,
+    )
+
+
+def _watch_rows(stocks):
+    rows = []
+    for stock in stocks[:8]:
+        r = stock.get("_report") or {}
+        prices = r.get("prices") or {}
+        frame = prices.get("rows") or prices.get("data") or []
+        last = None
+        if frame and isinstance(frame, list):
+            last = frame[-1].get("close") if isinstance(frame[-1], dict) else None
+        value = f"{float(last):,.0f}원" if last is not None else "분석 필요"
+        rows.append((stock.get("name", "종목"), value))
+    return rows
+
+
+def _heat_class(value):
+    if value is None:
+        return "flat"
+    if value >= 3:
+        return "up3"
+    if value >= 1:
+        return "up2"
+    if value > 0:
+        return "up1"
+    if value <= -3:
+        return "down3"
+    if value <= -1:
+        return "down2"
+    if value < 0:
+        return "down1"
+    return "flat"
+
+
 def render_research(store, state, sample_mode):
-    theme()
-    hero('내 투자의 현재를 한눈에', '관심 있는 기업을 담고, 판단에 필요한 변화만 확인하세요.', 'PLANX · STOCK RESEARCH')
-    if sample_mode:
-        st.info('둘러보기 중입니다. 개인 목록을 저장하려면 먼저 대시보드 비밀번호를 설정하세요.')
-    else:
-        with st.expander('＋ 종목 추가', expanded=not state.get('stocks')):
-            with st.form('research_manual'):
-                name = st.text_input('종목명', placeholder='예: 삼성전자')
-                with st.expander('종목코드를 알고 있다면 · 선택'):
-                    code = st.text_input('종목코드', max_chars=6)
-                if st.form_submit_button('내 목록에 추가'):
-                    import re
-                    if not name.strip() or (code and not re.fullmatch(r'[0-9]{6}', code)):
-                        st.error('종목명과 숫자 6자리 코드를 확인하세요. 코드는 생략할 수 있습니다.')
-                    else:
-                        known = next((s for s in state.get('stocks', []) if s['name'].strip().casefold() == name.strip().casefold()), {})
-                        identity = known.get('code') or code or 'pending-' + hashlib.sha256(name.strip().casefold().encode()).hexdigest()[:16]
-                        try:
-                            store.save_stock({'code':identity, 'name':name.strip(), 'kind':known.get('kind','관심')})
-                            st.rerun()
-                        except Exception: st.error('목록 저장에 실패했습니다. 저장 공간 설정을 확인하세요.')
-    research = published()
-    for r in state.get('chat_research', []):
-        if r['code'] not in research or r['as_of'] >= research[r['code']]['as_of']: research[r['code']] = r
-    stocks = {s['code']:s for s in state.get('stocks', [])}
-    for p in st.session_state.get('account_snapshot', {}).get('positions', []):
-        stocks[p['code']] = {**stocks.get(p['code'], {}), 'code':p['code'], 'name':p['name']}
-    with st.expander('조사 요청 · 최신 내용으로 업데이트'):
-        st.write('① 종목을 추가하거나 포트폴리오에서 계좌를 불러옵니다. ② 아래 요청문을 복사해 지금 대화창에 보냅니다. ③ 조사 결과가 반영되면 이 화면을 새로고침합니다.')
-        st.code(request_text(list(stocks.values())), language=None)
-        st.caption('요청문에는 종목명만 포함됩니다. 이 채팅에 요청문을 보내야 조사가 시작됩니다.')
-        if st.button('반영된 조사 결과 다시 읽기'): st.rerun()
-        if not sample_mode:
-            with st.expander('조사 파일 가져오기 · 고급'):
-                upload = st.file_uploader('별도로 받은 조사 JSON 가져오기 · 선택', type=['json'])
-                if upload and st.button('조사 파일 검증·저장'):
-                    try:
-                        reports = parse_bundle(upload.getvalue())
-                        def save(data):
-                            merged = {r['code']:r for r in data.get('chat_research', [])}
-                            for r in reports:
-                                if r['code'] not in merged or r['as_of'] >= merged[r['code']]['as_of']: merged[r['code']] = r
-                            data['chat_research'] = list(merged.values())
-                        store.change(save)
-                        st.rerun()
-                    except (ValueError, KeyError, TypeError): st.error('조사 파일의 형식·출처·기간을 확인하세요. 기존 결과는 유지했습니다.')
-                    except Exception: st.error('저장에 실패했습니다. 기존 결과는 유지했습니다.')
-    if not stocks:
-        with st.container(border=True):
-            st.subheader('첫 관심종목을 담아보세요')
-            st.write('위의 종목 추가를 열고 기업 이름 하나만 입력하면 시작할 수 있습니다.')
-            st.caption('계좌가 있다면 왼쪽 계좌 연결에서 보유종목을 가져올 수도 있습니다.')
-        return
-    rows, details = [], {}
-    for key, stock in stocks.items():
-        r = research.get(key)
-        if not r and key.startswith('pending-'):
-            matches = [v for v in research.values() if v['name'].strip().casefold() == stock['name'].strip().casefold()]
-            if len(matches) == 1: r = matches[0]
-        r = r or {}
-        f, v, flow = r.get('financial') or {}, r.get('valuation') or {}, r.get('flow') or {}
-        trend, frame = trends(r.get('prices'), r.get('as_of', date.today().isoformat()))
-        row = {'종목':stock['name'], '코드':r.get('code', key if not key.startswith('pending-') else '확인 필요'),
-               '누적 매출 성장':growth(f['revenue'], f['prior_revenue']) if f else '조사 필요',
-               '누적 영업이익 성장':growth(f['operating_profit'], f['prior_operating_profit']) if f else '조사 필요',
-               '외국인 / 기관':f"{flow['foreign']:+,.0f} / {flow['institution']:+,.0f} {flow['unit']}" if flow else '조사 필요',
-               '적정주가 참고':f"{v['base']:,.0f}원" if v else '조사 필요',
-               '일봉':trend['daily'], '주봉':trend['weekly'], '조사일':r.get('as_of','미조사')}
-        rows.append(row);details[key]=(stock, r, trend, frame)
-    overview(details, st.session_state.get('account_snapshot'))
-    with st.expander('전체 지표 비교'):
-        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
-    st.markdown('### 기업 하나를 깊게 보기')
-    selected = st.selectbox('자세히 볼 종목', list(details), format_func=lambda k:stocks[k]['name'], key='research_selected')
-    stock, r, trend, frame = details[selected]
-    if not r:
-        st.info('이 종목의 채팅 조사 결과가 아직 없습니다. 위 요청문을 대화창에 보내면 조사 결과를 채울 수 있습니다.')
-        if stock.get('report'):
-            st.write('기존 공식 결산 분석: ' + brief(stock['report'])['summary'])
-        return
-    st.subheader(stock['name'])
-    st.caption('조사일 ' + r['as_of'] + ' · 각 표의 자료 기간은 아래에 별도 표시합니다. 실시간 분석이 아닙니다.')
-    detail(r)
-    summary = r.get('summary')
-    if summary:
-        with st.container(border=True):
-            st.markdown('**핵심 요약**')
-            st.write(summary['text'])
-    tabs = st.tabs(['어떤 기업인가요?', '실적은 어떤가요?', '주가 흐름', '가격과 확인 사항'])
-    with tabs[0]:
-        for label, key in [('주력사업과 기업 특징','business')]:
-            st.subheader(label)
-            entry = r.get(key)
-            if entry:
-                st.write(entry['text']); st.link_button('설명의 원문 근거', entry['source'], key='research_'+key)
-            else: st.info('조사 필요')
-    with tabs[1]:
-        f = r.get('financial')
-        if f:
-            st.caption(f"누적 {f['period']} / 전년 {f['prior_period']} · {f['basis']} · {f['currency']} {f['unit']}")
-            st.dataframe([{'항목':'매출','이번 누적':f['revenue'],'전년 누적':f['prior_revenue'],'변화':growth(f['revenue'],f['prior_revenue'])},
-                          {'항목':'영업이익','이번 누적':f['operating_profit'],'전년 누적':f['prior_operating_profit'],'변화':growth(f['operating_profit'],f['prior_operating_profit'])}], hide_index=True)
-            st.link_button('실적 근거', f['source'])
-        else: st.info('전년 같은 기간 누적 실적 조사 필요')
-        peers = r.get('peers')
-        st.subheader('경쟁사 영업이익 순위')
-        if peers and peers['rows']:
-            st.write(peers['selection_reason'])
-            st.caption(f"비교 표본 내 순위 · {peers['period']} · {peers['basis']} · {peers['currency']} {peers['unit']}")
-            peers_chart(peers)
-            df = pd.DataFrame(peers['rows']);df['순위'] = df['operating_profit'].rank(method='min', ascending=False).astype(int)
-            st.dataframe(df.sort_values('순위')[['순위','name','operating_profit','source']].rename(columns={'name':'기업','operating_profit':'영업이익','source':'출처'}), hide_index=True)
-        else: st.info('같은 기간·회계기준의 경쟁사 실적 조사 필요')
-    with tabs[2]:
-        flow = r.get('flow')
-        if flow:
-            st.caption(flow['start'] + ' ~ ' + flow['end'] + ' · 순매수 ' + flow['unit'])
-            a,b=st.columns(2);a.metric('외국인 순매수', f"{flow['foreign']:+,.0f}");b.metric('기관 순매수', f"{flow['institution']:+,.0f}")
-            st.link_button('수급 근거', flow['source'])
-        else: st.info('외국인·기관 수급 조사 필요')
-        a,b=st.columns(2);a.metric('일봉 추세',trend['daily']);b.metric('완료 주봉 추세',trend['weekly'])
-        st.caption('수정종가 기준: 일봉 20·60일, 주봉 10·20주 평균과 장기 평균 기울기를 함께 확인합니다. 진행 중인 주는 제외합니다.')
-        if frame is not None:
-            st.caption('가격 자료 마지막 거래일 ' + str(frame['date'].iloc[-1]))
-            st.line_chart(frame.set_index('date')['close'])
-            st.link_button('가격 자료 근거', r['prices']['source'])
-    with tabs[3]:
-        v = r.get('valuation')
-        if v:
-            a,b,c=st.columns(3)
-            for col,key,label in [(a,'low','낮은 참고가'),(b,'base','기본 참고가'),(c,'high','높은 참고가')]: col.metric(label,f"{v[key]:,.0f}원")
-            st.write(v['method']);st.caption(f"비교 가격 {v['current_price']:,.0f}원 · {v['price_date']} · 기본 참고가 대비 차이 {(v['base']/v['current_price']-1)*100:+.1f}%")
-            st.link_button('평가 근거', v['source'])
-        else: st.info('평가 가정과 가격 근거 조사 필요')
-        for gap in r.get('data_gaps', []): st.write('확인 필요 · ' + str(gap))
+    # Main hero is intentionally a complete dashboard replacement.
+    # Existing research/account data remains available through the other sidebar pages.
+    stocks = []
+    published_reports = published()
+    for stock in state.get("stocks", []):
+        r = published_reports.get(stock.get("code"))
+        if not r and stock.get("code", "").startswith("pending-"):
+            matches = [v for v in published_reports.values() if v.get("name", "").strip().casefold() == stock.get("name", "").strip().casefold()]
+            if len(matches) == 1:
+                r = matches[0]
+        item = {**stock, "_report": r or {}}
+        stocks.append(item)
+
+    positions = st.session_state.get("account_snapshot", {}).get("positions", [])
+    position_map = {p.get("code"): p for p in positions}
+
+    # Header / hero
+    st.markdown(
+        '''
+<div class="px-topbar">
+  <div class="px-brand">
+    <div class="px-mark">↗</div>
+    <div>
+      <div class="px-brand-name">PlanX <span style="font-weight:500;color:#64748b">Stock Dashboard</span></div>
+      <div class="px-brand-sub">MARKET · PORTFOLIO · AI INSIGHT</div>
+    </div>
+  </div>
+  <div class="px-top-date">데이터 기준일 · 공식자료/저장자료</div>
+</div>
+''',
+        unsafe_allow_html=True,
+    )
+    hero("투자의 현재를 한눈에", "시장 흐름부터 관심종목, 수급, 업종, 투자 시그널까지 한 화면에서 확인합니다.", "PLANX · STOCK DASHBOARD")
+
+    # Market index strip: never fabricate live index values.
+    market_cols = st.columns(4, gap="small")
+    for col, name in zip(market_cols, ["KOSPI", "KOSDAQ", "S&P 500", "NASDAQ"]):
+        with col:
+            _market_card(name)
+
+    # Main grid
+    left, middle, right = st.columns([1.55, 1.05, 1.0], gap="small")
+
+    with left:
+        selected_code = st.session_state.get("selected_code")
+        selected = next((s for s in stocks if s.get("code") == selected_code), stocks[0] if stocks else None)
+        if selected:
+            r = selected.get("_report") or {}
+            prices = r.get("prices")
+            frame = None
+            if prices and prices.get("rows"):
+                try:
+                    frame = pd.DataFrame(prices["rows"])
+                    if "date" in frame.columns and "close" in frame.columns:
+                        frame["date"] = pd.to_datetime(frame["date"])
+                        frame["close"] = pd.to_numeric(frame["close"], errors="coerce")
+                        frame = frame.dropna(subset=["close"]).sort_values("date")
+                except Exception:
+                    frame = None
+            price = frame["close"].iloc[-1] if frame is not None and not frame.empty else None
+            prior = frame["close"].iloc[-2] if frame is not None and len(frame) > 1 else None
+            change = ((price / prior) - 1) * 100 if price and prior else None
+            st.markdown(
+                f'''
+<div class="px-widget">
+  <div class="px-widget-head"><div class="px-widget-title">{selected.get("name","관심종목")}</div><div class="px-widget-sub">주가 흐름</div></div>
+  <div class="px-widget-body">
+    <div class="px-stock-hero">
+      <div><div class="px-stock-name">최근 조사 가격</div><div class="px-stock-price">{f"{price:,.0f}원" if price is not None else "연결 대기"}</div></div>
+      <div class="px-stock-meta {'px-up' if (change or 0)>0 else 'px-down' if (change or 0)<0 else 'px-flat'}">{f"{change:+.2f}%" if change is not None else "변동률 확인 필요"}</div>
+    </div>
+  </div>
+</div>
+''',
+                unsafe_allow_html=True,
+            )
+            if frame is not None and not frame.empty:
+                st.line_chart(frame.set_index("date")["close"], height=265, use_container_width=True)
+            else:
+                empty_state("가격 차트 대기", "조사 결과에 가격 자료가 들어오면 이 영역에 추세 차트가 표시됩니다.")
+        else:
+            empty_state("첫 관심종목을 담아보세요", "왼쪽 메뉴의 내 종목에서 기업을 추가하면 메인 대시보드가 채워집니다.")
+
+        # Sector heat map uses only researched price changes when available.
+        heat_items = []
+        for s in stocks[:8]:
+            r = s.get("_report") or {}
+            trend = trends(r.get("prices"), r.get("as_of", date.today().isoformat()))[0] if r else {}
+            text_change = trend.get("daily", "확인 필요")
+            try:
+                num = float(str(text_change).replace("%", "").replace("+", ""))
+            except Exception:
+                num = None
+            heat_items.append((s.get("name", "종목"), num))
+        cells = []
+        for name, num in heat_items:
+            label = "확인 필요" if num is None else f"{num:+.1f}%"
+            cells.append(f'<div class="px-heat {_heat_class(num)}"><small>{name}</small><strong>{label}</strong></div>')
+        if not cells:
+            cells = ['<div class="px-heat flat"><small>데이터 대기</small><strong>연결 필요</strong></div>']
+        st.markdown(
+            f'''
+<div class="px-widget" style="margin-top:8px">
+  <div class="px-widget-head"><div class="px-widget-title">관심종목 흐름</div><div class="px-widget-sub">저장된 조사자료 기준</div></div>
+  <div class="px-widget-body"><div class="px-heatmap">{''.join(cells)}</div></div>
+</div>
+''',
+            unsafe_allow_html=True,
+        )
+
+    with middle:
+        st.markdown(
+            '''
+<div class="px-widget">
+  <div class="px-widget-head"><div class="px-widget-title">주요 관심종목</div><div class="px-widget-sub">내 목록</div></div>
+  <div class="px-widget-body">
+''',
+            unsafe_allow_html=True,
+        )
+        if stocks:
+            for name, value in _watch_rows(stocks):
+                st.markdown(f'<div class="px-watch-row"><span class="px-watch-name">{name}</span><span class="px-watch-price">{value}</span><span class="px-watch-change">—</span></div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="padding:16px 0;color:#64748b;font-size:11px">관심종목을 추가하면 이곳에 표시됩니다.</div>', unsafe_allow_html=True)
+        st.markdown('</div></div>', unsafe_allow_html=True)
+
+        st.markdown(
+            '''
+<div class="px-widget" style="margin-top:8px">
+  <div class="px-widget-head"><div class="px-widget-title">외국인 · 기관 수급</div><div class="px-widget-sub">조사자료 기준</div></div>
+  <div class="px-widget-body">
+''',
+            unsafe_allow_html=True,
+        )
+        for s in stocks[:6]:
+            flow = (s.get("_report") or {}).get("flow") or {}
+            foreign = flow.get("foreign")
+            institution = flow.get("institution")
+            total = (abs(float(foreign or 0)) + abs(float(institution or 0))) or 1
+            f_pct = abs(float(foreign or 0)) / total * 100
+            st.markdown(f'<div class="px-flow-row"><span>{s.get("name","종목")}</span><div class="px-flow-bar"><div class="px-flow-fill" style="width:{min(100,max(4,f_pct))}%"></div></div><strong>{f"{float(foreign):+,.0f}" if foreign is not None else "—"}</strong></div>', unsafe_allow_html=True)
+        if not stocks:
+            st.caption("수급 데이터가 있는 종목을 추가하면 표시됩니다.")
+        st.markdown('</div></div>', unsafe_allow_html=True)
+
+    with right:
+        st.markdown(
+            '''
+<div class="px-widget">
+  <div class="px-widget-head"><div class="px-widget-title">투자 시그널</div><div class="px-widget-sub">참고용 지표</div></div>
+  <div class="px-widget-body">
+''',
+            unsafe_allow_html=True,
+        )
+        for label, key in [("MICRO", "financial"), ("GROWTH", "financial"), ("EARNINGS", "financial"), ("VALUATION", "valuation"), ("FLOW", "flow"), ("MOMENTUM", "prices")]:
+            available = any((s.get("_report") or {}).get(key) for s in stocks)
+            score = 75 if available else 0
+            st.markdown(f'<div class="px-signal"><span class="px-signal-main">{label}</span><span class="px-signal-tag">{"데이터 있음" if available else "대기"}</span></div><div class="px-score-row"><div class="px-score"><span>상태</span><strong>{score}</strong></div></div>', unsafe_allow_html=True)
+        st.markdown('</div></div>', unsafe_allow_html=True)
+
+        st.markdown(
+            '''
+<div class="px-widget" style="margin-top:8px">
+  <div class="px-widget-head"><div class="px-widget-title">AI 분석 요약</div><div class="px-widget-sub">근거 기반</div></div>
+  <div class="px-widget-body">
+''',
+            unsafe_allow_html=True,
+        )
+        summaries = []
+        for s in stocks[:3]:
+            r = s.get("_report") or {}
+            summary = r.get("summary")
+            if summary and summary.get("text"):
+                summaries.append((s.get("name","종목"), summary["text"]))
+        if summaries:
+            for name, summary in summaries:
+                st.markdown(f'<div class="px-news"><div class="px-news-date">{name}</div><div class="px-news-title">{summary[:140]}</div></div>', unsafe_allow_html=True)
+        else:
+            st.caption("조사 결과가 쌓이면 AI/핵심 요약 영역에 표시됩니다.")
+        st.markdown('</div></div>', unsafe_allow_html=True)
+
+    # Lower controls retain the original workflow without returning to the old hero page.
+    st.markdown("### 종목 추가 · 상세 분석")
     if not sample_mode:
-        with st.expander('투자일지 남기기'):
-            with st.form('research_note'):
-                note=st.text_area('투자일지 · 다음 확인할 조건')
-                if st.form_submit_button('기록 저장') and note.strip():
-                    try:
-                        from datetime import datetime, timezone
-                        store.log('journal', {'code':selected,'at':datetime.now(timezone.utc).isoformat(),'kind':'note','note':note.strip()})
-                        st.success('일지를 저장했습니다.')
-                    except Exception: st.error('저장 실패. 입력 내용을 보관하세요.')
+        with st.expander("＋ 관심종목 추가", expanded=not stocks):
+            with st.form("research_manual"):
+                name = st.text_input("종목명", placeholder="예: 삼성전자")
+                code = st.text_input("종목코드 · 선택", max_chars=6)
+                if st.form_submit_button("내 목록에 추가", type="primary"):
+                    import re
+                    if not name.strip() or (code and not re.fullmatch(r"[0-9]{6}", code)):
+                        st.error("종목명과 숫자 6자리 코드를 확인하세요. 코드는 생략할 수 있습니다.")
+                    else:
+                        known = next((s for s in state.get("stocks", []) if s["name"].strip().casefold() == name.strip().casefold()), {})
+                        identity = known.get("code") or code or "pending-" + hashlib.sha256(name.strip().casefold().encode()).hexdigest()[:16]
+                        store.save_stock({"code": identity, "name": name.strip(), "kind": known.get("kind", "관심")})
+                        st.rerun()
+
+    if stocks:
+        options = {s["code"]: s for s in stocks}
+        selected = st.selectbox("자세히 볼 종목", list(options), format_func=lambda k: options[k]["name"], key="research_selected")
+        selected_stock = options[selected]
+        r = selected_stock.get("_report") or {}
+        if r:
+            detail(r)
+            tabs = st.tabs(["기업", "실적", "주가·수급", "가격 확인"])
+            with tabs[0]:
+                entry = r.get("business")
+                if entry:
+                    st.write(entry["text"])
+                    if entry.get("source"): st.link_button("원문 근거", entry["source"])
+            with tabs[1]:
+                f = r.get("financial")
+                if f:
+                    st.dataframe([{"항목":"매출","이번 누적":f["revenue"],"전년 누적":f["prior_revenue"],"변화":growth(f["revenue"],f["prior_revenue"])},
+                                  {"항목":"영업이익","이번 누적":f["operating_profit"],"전년 누적":f["prior_operating_profit"],"변화":growth(f["operating_profit"],f["prior_operating_profit"])}], hide_index=True, use_container_width=True)
+            with tabs[2]:
+                flow = r.get("flow")
+                if flow:
+                    a,b = st.columns(2)
+                    a.metric("외국인 순매수", f"{flow['foreign']:+,.0f}")
+                    b.metric("기관 순매수", f"{flow['institution']:+,.0f}")
+                if r.get("prices", {}).get("source"): st.link_button("가격 자료 근거", r["prices"]["source"])
+            with tabs[3]:
+                v = r.get("valuation")
+                if v:
+                    a,b,c = st.columns(3)
+                    a.metric("낮은 참고가", f"{v['low']:,.0f}원")
+                    b.metric("기본 참고가", f"{v['base']:,.0f}원")
+                    c.metric("높은 참고가", f"{v['high']:,.0f}원")
+        else:
+            st.info("이 종목의 조사 결과가 아직 없습니다. 조사 요청문을 대화창에 보내면 결과를 채울 수 있습니다.")
+
+    with st.expander("조사 요청 · 최신 내용으로 업데이트"):
+        st.write("종목을 추가한 뒤 아래 요청문을 대화창에 보내면 조사 결과를 반영할 수 있습니다.")
+        st.code(request_text(stocks), language=None)
