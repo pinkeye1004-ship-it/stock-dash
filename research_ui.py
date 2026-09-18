@@ -149,9 +149,9 @@ def render_research(store, state, sample_mode):
             if frame is not None and not frame.empty:
                 st.line_chart(frame.set_index("date")["close"], height=265, use_container_width=True)
             else:
-                empty_state("가격 차트 대기", "조사 결과에 가격 자료가 들어오면 이 영역에 추세 차트가 표시됩니다.")
+                st.info("가격 차트 대기 · 조사 결과에 가격 자료가 들어오면 이 영역에 추세 차트가 표시됩니다.")
         else:
-            empty_state("첫 관심종목을 담아보세요", "왼쪽 메뉴의 내 종목에서 기업을 추가하면 메인 대시보드가 채워집니다.")
+            st.info("첫 관심종목을 담아보세요 · 왼쪽 메뉴의 내 종목에서 기업을 추가하면 메인 대시보드가 채워집니다.")
 
         # Sector heat map uses only researched price changes when available.
         heat_items = []
