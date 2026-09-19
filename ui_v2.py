@@ -404,6 +404,52 @@ section[data-testid="stSidebar"] .planx-brand-sub { font-size:10px !important; l
   .ref-flow-nav { display:none; }
 }
 
+
+/* PlanX reference v4 */
+.stApp{background:#f6faff !important;}
+.block-container{max-width:1560px !important;padding-top:1.6rem !important;padding-left:1.1rem !important;padding-right:1.1rem !important;}
+section[data-testid="stSidebar"]{background:#f7f9fc !important;border-right:1px solid #e6edf5 !important;}
+section[data-testid="stSidebar"] > div{padding:1.2rem .85rem !important;}
+section[data-testid="stSidebar"] .planx-brand{margin:0 8px 26px !important;}
+section[data-testid="stSidebar"] .planx-brand-mark{display:flex !important;background:#2f80ed !important;width:34px !important;height:34px !important;border-radius:10px !important;}
+section[data-testid="stSidebar"] .planx-brand-title{font-size:24px !important;color:#0f274f !important;font-family:inherit !important;font-weight:800 !important;}
+section[data-testid="stSidebar"] .planx-brand-sub{font-size:10px !important;color:#61708a !important;letter-spacing:.01em !important;text-transform:none !important;}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"]{gap:5px !important;}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label{padding:11px 12px !important;border-radius:9px !important;color:#41536f !important;}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label:has(input:checked){background:#e9f2ff !important;color:#1267d6 !important;box-shadow:none !important;}
+.ref-topline{grid-template-columns:auto minmax(360px,1fr) auto !important;gap:24px !important;margin-bottom:16px !important;min-height:54px !important;}
+.ref-brand-main{font-family:inherit !important;font-size:30px !important;color:#0f274f !important;font-weight:800 !important;}
+.ref-brand-sub{font-size:15px !important;letter-spacing:0 !important;color:#0f274f !important;font-weight:700 !important;}
+.ref-search{height:42px !important;border-radius:22px !important;background:#fff !important;font-size:12px !important;max-width:500px !important;box-shadow:0 4px 18px rgba(44,91,154,.06);}
+.ref-user-meta{font-size:11px !important;color:#31486a !important;}
+.ref-index-grid{grid-template-columns:repeat(5,1fr) !important;gap:12px !important;margin-bottom:16px !important;}
+.ref-index-card{min-height:112px !important;padding:15px 16px !important;border-radius:12px !important;background:linear-gradient(180deg,#fff,#f9fbff) !important;}
+.ref-index-name{font-size:11px !important;color:#101f38 !important;}
+.ref-index-value{font-size:24px !important;color:#0c2145 !important;}
+.ref-index-change{font-size:11px !important;}
+.ref-spark{width:94px !important;height:42px !important;}
+.ref-slogan-row,.ref-tab-row{display:none !important;}
+.ref-card{border-radius:12px !important;border-color:#e3ebf5 !important;box-shadow:0 8px 24px rgba(45,87,145,.045) !important;}
+.score-card,.signal-card{min-height:0 !important;}
+.ref-score-ring{width:100px !important;height:100px !important;}
+.ref-score-list{font-size:10px !important;}
+.signal-card{padding:15px !important;}
+.signal-card h4{font-size:14px !important;margin:10px 0 8px !important;}
+.signal-card p{font-size:10px !important;}
+.ref-bars{height:46px !important;}
+.ref-stock-head strong{font-size:22px !important;color:#0d2345 !important;}
+.ref-stock-price{font-size:29px !important;color:#ff1744 !important;margin-top:10px !important;}
+.ref-heat-grid{grid-template-columns:repeat(4,1fr) !important;gap:2px !important;}
+.ref-heat{min-height:82px !important;border-radius:4px !important;}
+.ref-heat.up{background:linear-gradient(135deg,#e05861,#dc6d78) !important;color:#fff !important;}
+.ref-heat.down{background:linear-gradient(135deg,#4097f0,#2f70d8) !important;color:#fff !important;}
+.ref-watch-row{min-height:33px !important;font-size:10px !important;}
+.ref-bottom-grid{grid-template-columns:1.6fr 1fr !important;}
+.ref-ai-list{font-size:10px !important;}
+.ref-alert-row{font-size:9px !important;}
+[data-testid="stLineChart"]{border:1px solid #e5edf7 !important;border-radius:12px !important;}
+@media (max-width:1200px){.ref-index-grid{grid-template-columns:repeat(2,1fr) !important;}.ref-topline{grid-template-columns:1fr !important;}}
+
 </style>
 """,
         unsafe_allow_html=True,
@@ -416,8 +462,8 @@ def brand():
 <div class="planx-brand">
   <div class="planx-brand-mark">↗</div>
   <div>
-    <div class="planx-brand-title">StockDash</div>
-    <div class="planx-brand-sub">Data to Insight.</div>
+    <div class="planx-brand-title">PlanX</div>
+    <div class="planx-brand-sub">Stock Dashboard</div>
   </div>
 </div>
 """,
