@@ -320,7 +320,7 @@ section[data-testid="stSidebar"] .planx-brand-sub { font-size:9px !important; co
 
 /* Reference dashboard v3 */
 .stApp { background:#f7f9fc !important; }
-.block-container { max-width: 1500px !important; padding-top: .8rem !important; padding-bottom: 2rem !important; }
+.block-container { max-width: 1500px !important; padding-top: 3.6rem !important; padding-bottom: 2rem !important; }\n.ref-topline { padding-top: .35rem !important; min-height: 52px; }
 section[data-testid="stSidebar"] { background:#f3eee5 !important; border-right:1px solid #e4ddd1 !important; }
 section[data-testid="stSidebar"] > div { padding:1.4rem .8rem !important; }
 section[data-testid="stSidebar"] .planx-brand { margin:6px 8px 32px !important; }
