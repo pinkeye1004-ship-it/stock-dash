@@ -123,90 +123,32 @@ def render_research(store, state, sample_mode):
 <div class="ref-topline">
   <div class="ref-brand-row">
     <div class="ref-brand-main">PlanX</div>
-    <div class="ref-brand-sub">STOCK INTELLIGENCE</div>
+    <div class="ref-brand-sub">Stock Dashboard</div>
   </div>
   <div class="ref-search">⌕&nbsp;&nbsp; 종목명 또는 키워드를 검색하세요.</div>
-  <div class="ref-user-meta">시장 데이터 샘플 · 사용자</div>
+  <div class="ref-user-meta">2026년 9월 19일 · 시장 데이터</div>
 </div>
 """,
         unsafe_allow_html=True,
     )
 
-    # market strip - real values only where researched data exists
-    cards = []
-    if selected_report:
-        val, chg = _latest_price(selected_report)
-        vals = _trend_values(selected_report)
-        cards.append(_index_card("선택 종목", val, chg, vals))
-    cards.extend(
-        [
-            _index_card("KOSPI", None, None, []),
-            _index_card("KOSDAQ", None, None, []),
-            _index_card("USD/KRW", None, None, []),
-            _index_card("WTI", None, None, []),
-        ]
-    )
-    st.markdown('<div class="ref-index-grid">' + "".join(cards[:5]) + "</div>", unsafe_allow_html=True)
-
-    st.markdown(
-        """
-<div class="ref-slogan-row">
-  <div>더 깊은 분석이, 더 나은 투자를 만듭니다. PlanX가 시장의 흐름을 함께 읽어드립니다.</div>
-  <div>공식자료 · 저장자료 기준</div>
-</div>
-<div class="ref-tab-row">
-  <div class="ref-tab active">오늘의 투자판단</div>
-  <div class="ref-tab">관심종목분석</div>
-  <div class="ref-flow-nav"><span>시장</span><b>›</b><span>산업</span><b>›</b><span>기업</span><b>›</b><span class="active">투자판단</span></div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-
-    score = _score_from_data(stocks)
-    score_label = "데이터 축적중" if score < 40 else "중립" if score < 70 else "긍정"
-
-    c1, c2, c3, c4, c5 = st.columns([1.0, 1.1, 1.1, 1.1, 1.1], gap="small")
-    with c1:
-        st.markdown(
-            f"""
-<div class="ref-card score-card">
-  <div class="ref-card-head"><strong>종합 투자점수</strong></div>
-  <div class="ref-score-ring"><div>{score}<small>/100</small></div></div>
-  <div class="ref-score-list">
-    <span>데이터 완성도</span><b>{score}</b>
-    <span>현재 상태</span><b>{score_label}</b>
-  </div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-
-    signal_specs = [
-        ("◎ 매크로", "안정적인 흐름 지속", "금리와 유동성 방향을 확인합니다.", "#94a3b8"),
-        ("◉ 성장산업", "AI·반도체 수요 확인", "산업 성장과 투자 기회를 함께 봅니다.", "#16a34a"),
-        ("◼ 수출·수주", "수출 개선세 점검", "매출로 전환되는지 확인합니다.", "#16a34a"),
-        ("▥ 실적 성장", "이익 성장 확인", "매출보다 영업이익의 속도를 봅니다.", "#16a34a"),
+    # Market strip mirrors the supplied reference. Missing market feeds stay explicit.
+    cards = [
+        _index_card("KOSPI", None, None, []),
+        _index_card("KOSDAQ", None, None, []),
+        _index_card("S&P 500", None, None, []),
+        _index_card("NASDAQ", None, None, []),
     ]
-    for col, spec in zip([c2, c3, c4, c5], signal_specs):
-        title, headline, desc, color = spec
-        with col:
-            st.markdown(
-                f"""
-<div class="ref-card signal-card">
-  <div class="ref-card-head"><strong>{title}</strong><span class="pill">{"긍정" if color == "#16a34a" else "중립"}</span></div>
-  <h4>{headline}</h4>
-  <p>{desc}</p>
-  <div class="ref-bars">
-    <i style="height:18px;background:{color}"></i><i style="height:24px;background:{color}"></i>
-    <i style="height:31px;background:{color}"></i><i style="height:38px;background:{color}"></i><i style="height:46px;background:{color}"></i>
-  </div>
+    promo = """
+<div class="ref-index-card ref-promo-card">
+  <div class="ref-promo-title">좋은 기업이<br>더 좋은 내일을 만듭니다.</div>
+  <div class="ref-promo-sub">Better Investment,<br>A Brighter Tomorrow.</div>
 </div>
-""",
-                unsafe_allow_html=True,
-            )
+"""
+    st.markdown('<div class="ref-index-grid">' + "".join(cards) + promo + "</div>", unsafe_allow_html=True)
 
-    left, mid, right = st.columns([2.1, 1.0, 1.0], gap="small")
+    # Main dashboard: large stock chart, watchlist and investor flow.
+    left, middle, right = st.columns([1.75, 1.0, 1.0], gap="small")
 
     with left:
         if selected:
@@ -220,6 +162,7 @@ def render_research(store, state, sample_mode):
   <div class="ref-stock-price">{f"{selected_price:,.0f}원" if selected_price is not None else "연결 대기"}
     <span class="{"pos" if (selected_change or 0)>=0 else "neg"}">{f"{selected_change:+.2f}%" if selected_change is not None else "변동률 대기"}</span>
   </div>
+  <div class="ref-period-tabs"><span>1일</span><span>1주</span><span>1개월</span><span class="active">3개월</span><span>6개월</span><span>1년</span><span>3년</span><span>5년</span></div>
 </div>
 """,
                 unsafe_allow_html=True,
@@ -233,42 +176,15 @@ def render_research(store, state, sample_mode):
                     frame["close"] = pd.to_numeric(frame["close"], errors="coerce")
                     frame = frame.dropna(subset=["date", "close"]).sort_values("date")
                     if not frame.empty:
-                        st.line_chart(frame.set_index("date")["close"], height=240, use_container_width=True)
+                        st.line_chart(frame.set_index("date")["close"], height=300, use_container_width=True)
                 except Exception:
                     st.info("차트 데이터를 불러오지 못했습니다.")
             else:
-                st.info("가격 차트는 조사 데이터가 연결되면 표시됩니다.")
+                st.info("관심종목의 가격 데이터가 연결되면 메인 차트가 표시됩니다.")
         else:
             st.info("관심종목을 추가하면 메인 차트가 표시됩니다.")
 
-    with mid:
-        heat_items = []
-        for s in stocks[:9]:
-            r = s.get("_report") or {}
-            t = trends(r.get("prices"), r.get("as_of", date.today().isoformat()))[0] if r else {}
-            try:
-                num = float(str(t.get("daily", "")).replace("%", "").replace("+", ""))
-            except Exception:
-                num = None
-            heat_items.append((s.get("name", "종목"), num))
-        if not heat_items:
-            heat_items = [("데이터 대기", None)]
-        heat_html = ""
-        for name, num in heat_items:
-            cls = "flat" if num is None else "up" if num >= 0 else "down"
-            label = "대기" if num is None else f"{num:+.1f}%"
-            heat_html += f'<div class="ref-heat {cls}"><strong>{name}</strong><span>{label}</span></div>'
-        st.markdown(
-            f"""
-<div class="ref-card">
-  <div class="ref-card-head"><strong>섹터별 등락률</strong><span>저장자료</span></div>
-  <div class="ref-heat-grid">{heat_html}</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-
-    with right:
+    with middle:
         rows = _watchlist_rows(stocks)
         body = ""
         if rows:
@@ -276,41 +192,106 @@ def render_research(store, state, sample_mode):
                 p = "분석 필요" if row["price"] is None else f'{row["price"]:,.0f}'
                 ch = "—" if row["change"] is None else f'{row["change"]:+.2f}%'
                 cls = "pos" if (row["change"] or 0) >= 0 else "neg"
-                body += f'<div class="ref-watch-row"><span>★ {row["name"]}</span><b>{p}</b><em class="{cls}">{ch}</em></div>'
+                body += f'<div class="ref-watch-row"><span>{row["name"]}</span><b>{p}</b><em class="{cls}">{ch}</em><small>매수</small></div>'
         else:
             body = '<div class="ref-empty">관심종목을 추가하세요.</div>'
         st.markdown(
             f"""
-<div class="ref-card">
-  <div class="ref-card-head"><strong>관심종목</strong><span>더보기 ›</span></div>
+<div class="ref-card ref-watch-card">
+  <div class="ref-card-head"><strong>주요 관심종목</strong><span>＋ 종목추가</span></div>
+  <div class="ref-watch-head"><span>종목명</span><span>현재가</span><span>등락률</span><span>신호</span></div>
   <div>{body}</div>
 </div>
 """,
             unsafe_allow_html=True,
         )
 
-    ai_texts = []
-    for s in stocks[:3]:
-        summary = (s.get("_report") or {}).get("summary")
-        if summary and summary.get("text"):
-            ai_texts.append(summary.get("text"))
-    ai_html = "".join(f"<li>{x[:160]}</li>" for x in ai_texts) or "<li>조사 결과가 쌓이면 핵심 분석이 표시됩니다.</li>"
-    st.markdown(
-        f"""
-<div class="ref-bottom-grid">
-  <div class="ref-card">
-    <div class="ref-card-head"><strong>AI 분석 요약</strong><span>더보기 ›</span></div>
-    <ul class="ref-ai-list">{ai_html}</ul>
-  </div>
-  <div class="ref-card">
-    <div class="ref-card-head"><strong>실시간 알림</strong><span>저장자료 기준</span></div>
-    <div class="ref-alert-row"><i></i><span>관심종목과 조사 결과의 최신 상태를 확인하세요.</span></div>
-    <div class="ref-alert-row"><i></i><span>시장 데이터 API 연결 시 이 영역이 확장됩니다.</span></div>
+    with right:
+        st.markdown(
+            """
+<div class="ref-card ref-flow-card">
+  <div class="ref-card-head"><strong>외국인/기관 수급</strong><span>실시간 ›</span></div>
+  <div class="ref-flow-tabs"><span class="active">KOSPI</span><span>KOSDAQ</span><span>선물</span><span>옵션</span></div>
+  <div class="ref-flow-metrics"><div><small>외국인</small><b class="pos">데이터 대기</b></div><div><small>기관</small><b class="pos">데이터 대기</b></div><div><small>개인</small><b class="neg">데이터 대기</b></div></div>
+  <div class="ref-flow-bars">
+    <i style="height:20%"></i><i style="height:36%"></i><i class="neg" style="height:45%"></i><i style="height:55%"></i><i style="height:75%"></i><i style="height:35%"></i><i class="neg" style="height:60%"></i><i style="height:48%"></i><i style="height:72%"></i>
   </div>
 </div>
 """,
-        unsafe_allow_html=True,
-    )
+            unsafe_allow_html=True,
+        )
+
+    lower1, lower2, lower3 = st.columns([1.35, 1.05, 1.05], gap="small")
+
+    with lower1:
+        heat_items = []
+        for s in stocks[:12]:
+            r = s.get("_report") or {}
+            t = trends(r.get("prices"), r.get("as_of", date.today().isoformat()))[0] if r else {}
+            try:
+                num = float(str(t.get("daily", "")).replace("%", "").replace("+", ""))
+            except Exception:
+                num = None
+            heat_items.append((s.get("name", "종목"), num))
+        labels = ["전기·전자","반도체","자동차","2차전지","바이오","금융","화학","철강","기계·장비","건설","유통","통신"]
+        while len(heat_items) < 12:
+            heat_items.append((labels[len(heat_items)], None))
+        heat_html = ""
+        for name, num in heat_items[:12]:
+            cls = "flat" if num is None else "up" if num >= 0 else "down"
+            label = "대기" if num is None else f"{num:+.2f}%"
+            heat_html += f'<div class="ref-heat {cls}"><strong>{name}</strong><span>{label}</span></div>'
+        st.markdown(
+            f"""
+<div class="ref-card">
+  <div class="ref-card-head"><strong>업종별 등락 현황</strong><span>더보기 ›</span></div>
+  <div class="ref-heat-grid ref-heat-grid-4">{heat_html}</div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    with lower2:
+        st.markdown(
+            """
+<div class="ref-card">
+  <div class="ref-card-head"><strong>투자 스타일</strong><span>PlanX AI 분석결과</span></div>
+  <div class="ref-style-list">
+    <div><span>MACRO</span><i><b style="width:70%"></b></i><em>70</em><small>강세</small></div>
+    <div><span>GROWTH</span><i><b style="width:88%"></b></i><em>88</em><small>매우 강세</small></div>
+    <div><span>SIGNAL</span><i><b style="width:65%"></b></i><em>65</em><small>강세</small></div>
+    <div><span>EARNINGS</span><i><b style="width:80%"></b></i><em>80</em><small>강세</small></div>
+    <div><span>VALUATION</span><i><b style="width:60%"></b></i><em>60</em><small>중립</small></div>
+    <div><span>FLOW</span><i><b style="width:75%"></b></i><em>75</em><small>강세</small></div>
+    <div><span>DECISION</span><i><b style="width:78%"></b></i><em>78</em><small>검토</small></div>
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    ai_texts = []
+    for s in stocks[:4]:
+        summary = (s.get("_report") or {}).get("summary")
+        if summary and summary.get("text"):
+            ai_texts.append(summary.get("text"))
+    ai_html = "".join(f"<li>{x[:120]}</li>" for x in ai_texts) or "<li>조사 결과가 쌓이면 핵심 분석이 표시됩니다.</li>"
+    with lower3:
+        st.markdown(
+            f"""
+<div class="ref-card ref-ai-card">
+  <div class="ref-card-head"><strong>AI 분석 요약</strong><span>더보기 ›</span></div>
+  <ul class="ref-ai-list">{ai_html}</ul>
+</div>
+<div class="ref-card ref-alert-card" style="margin-top:10px">
+  <div class="ref-card-head"><strong>실시간 알림</strong><span>전체보기 ›</span></div>
+  <div class="ref-alert-row"><i></i><span>관심종목 최신 조사 상태를 확인하세요.</span></div>
+  <div class="ref-alert-row"><i></i><span>시장 데이터 API 연결 시 알림이 확장됩니다.</span></div>
+  <div class="ref-alert-row"><i></i><span>공시·수급 변화가 있으면 이 영역에 표시됩니다.</span></div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
 
     st.markdown("### 종목 추가 · 상세 분석")
     if not sample_mode:

@@ -404,6 +404,85 @@ section[data-testid="stSidebar"] .planx-brand-sub { font-size:10px !important; l
   .ref-flow-nav { display:none; }
 }
 
+
+/* PlanX reference v4 */
+.stApp{background:#f6faff !important;}
+.block-container{max-width:1560px !important;padding-top:1.6rem !important;padding-left:1.1rem !important;padding-right:1.1rem !important;}
+section[data-testid="stSidebar"]{background:#f7f9fc !important;border-right:1px solid #e6edf5 !important;}
+section[data-testid="stSidebar"] > div{padding:1.2rem .85rem !important;}
+section[data-testid="stSidebar"] .planx-brand{margin:0 8px 26px !important;}
+section[data-testid="stSidebar"] .planx-brand-mark{display:flex !important;background:#2f80ed !important;width:34px !important;height:34px !important;border-radius:10px !important;}
+section[data-testid="stSidebar"] .planx-brand-title{font-size:24px !important;color:#0f274f !important;font-family:inherit !important;font-weight:800 !important;}
+section[data-testid="stSidebar"] .planx-brand-sub{font-size:10px !important;color:#61708a !important;letter-spacing:.01em !important;text-transform:none !important;}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"]{gap:5px !important;}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label{padding:11px 12px !important;border-radius:9px !important;color:#41536f !important;}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label:has(input:checked){background:#e9f2ff !important;color:#1267d6 !important;box-shadow:none !important;}
+.ref-topline{grid-template-columns:auto minmax(360px,1fr) auto !important;gap:24px !important;margin-bottom:16px !important;min-height:54px !important;}
+.ref-brand-main{font-family:inherit !important;font-size:30px !important;color:#0f274f !important;font-weight:800 !important;}
+.ref-brand-sub{font-size:15px !important;letter-spacing:0 !important;color:#0f274f !important;font-weight:700 !important;}
+.ref-search{height:42px !important;border-radius:22px !important;background:#fff !important;font-size:12px !important;max-width:500px !important;box-shadow:0 4px 18px rgba(44,91,154,.06);}
+.ref-user-meta{font-size:11px !important;color:#31486a !important;}
+.ref-index-grid{grid-template-columns:repeat(5,1fr) !important;gap:12px !important;margin-bottom:16px !important;}
+.ref-index-card{min-height:112px !important;padding:15px 16px !important;border-radius:12px !important;background:linear-gradient(180deg,#fff,#f9fbff) !important;}
+.ref-index-name{font-size:11px !important;color:#101f38 !important;}
+.ref-index-value{font-size:24px !important;color:#0c2145 !important;}
+.ref-index-change{font-size:11px !important;}
+.ref-spark{width:94px !important;height:42px !important;}
+.ref-slogan-row,.ref-tab-row{display:none !important;}
+.ref-card{border-radius:12px !important;border-color:#e3ebf5 !important;box-shadow:0 8px 24px rgba(45,87,145,.045) !important;}
+.score-card,.signal-card{min-height:0 !important;}
+.ref-score-ring{width:100px !important;height:100px !important;}
+.ref-score-list{font-size:10px !important;}
+.signal-card{padding:15px !important;}
+.signal-card h4{font-size:14px !important;margin:10px 0 8px !important;}
+.signal-card p{font-size:10px !important;}
+.ref-bars{height:46px !important;}
+.ref-stock-head strong{font-size:22px !important;color:#0d2345 !important;}
+.ref-stock-price{font-size:29px !important;color:#ff1744 !important;margin-top:10px !important;}
+.ref-heat-grid{grid-template-columns:repeat(4,1fr) !important;gap:2px !important;}
+.ref-heat{min-height:82px !important;border-radius:4px !important;}
+.ref-heat.up{background:linear-gradient(135deg,#e05861,#dc6d78) !important;color:#fff !important;}
+.ref-heat.down{background:linear-gradient(135deg,#4097f0,#2f70d8) !important;color:#fff !important;}
+.ref-watch-row{min-height:33px !important;font-size:10px !important;}
+.ref-bottom-grid{grid-template-columns:1.6fr 1fr !important;}
+.ref-ai-list{font-size:10px !important;}
+.ref-alert-row{font-size:9px !important;}
+[data-testid="stLineChart"]{border:1px solid #e5edf7 !important;border-radius:12px !important;}
+@media (max-width:1200px){.ref-index-grid{grid-template-columns:repeat(2,1fr) !important;}.ref-topline{grid-template-columns:1fr !important;}}
+
+
+.ref-promo-card{background:linear-gradient(135deg,#eef6ff 0%,#cfe4fb 60%,#a8cff5 100%) !important;display:flex;flex-direction:column;justify-content:center;}
+.ref-promo-title{font-size:16px;font-weight:800;color:#18375f;line-height:1.35;}
+.ref-promo-sub{margin-top:8px;font-size:9px;color:#61708a;line-height:1.45;}
+.ref-period-tabs{display:flex;gap:18px;margin-top:14px;padding-top:10px;border-top:1px solid #eef2f7;font-size:10px;color:#61708a;}
+.ref-period-tabs span.active{background:#e7f0ff;color:#1d67d2;padding:4px 10px;border-radius:8px;font-weight:700;}
+.ref-watch-card{min-height:430px;}
+.ref-watch-head{display:grid;grid-template-columns:1.2fr .75fr .55fr .45fr;gap:8px;padding:8px 0;border-bottom:1px solid #eef2f7;color:#8a97aa;font-size:8px;}
+.ref-watch-row{grid-template-columns:1.2fr .75fr .55fr .45fr !important;}
+.ref-watch-row small{text-align:right;color:#ef476f;background:#fff0f4;border-radius:7px;padding:3px 5px;}
+.ref-flow-card{min-height:430px;}
+.ref-flow-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:8px 0;}
+.ref-flow-tabs span{background:#f0f3f7;border-radius:7px;padding:7px;text-align:center;font-size:9px;color:#66758b;}
+.ref-flow-tabs span.active{background:#e9f2ff;color:#1267d6;font-weight:700;}
+.ref-flow-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+.ref-flow-metrics div{padding:8px 5px;border-right:1px solid #edf1f5;}
+.ref-flow-metrics div:last-child{border-right:0;}
+.ref-flow-metrics small{display:block;color:#718096;font-size:8px;margin-bottom:4px;}
+.ref-flow-metrics b{font-size:10px;}
+.ref-flow-bars{height:210px;display:flex;align-items:center;justify-content:center;gap:9px;border-top:1px solid #eef2f7;border-bottom:1px solid #eef2f7;padding:12px 6px;}
+.ref-flow-bars i{width:10px;background:#2f80ed;border-radius:2px;}
+.ref-flow-bars i.neg{background:#ff4d67;}
+.ref-heat-grid-4{grid-template-columns:repeat(4,1fr) !important;}
+.ref-style-list{display:flex;flex-direction:column;gap:12px;padding-top:5px;}
+.ref-style-list>div{display:grid;grid-template-columns:72px 1fr 28px 56px;gap:8px;align-items:center;font-size:9px;}
+.ref-style-list span{color:#2a3e5d;font-weight:700;}
+.ref-style-list i{height:9px;background:#e7edf5;border-radius:999px;overflow:hidden;}
+.ref-style-list i b{display:block;height:100%;background:linear-gradient(90deg,#2f80ed,#35b7e8);border-radius:999px;}
+.ref-style-list em{font-style:normal;color:#31486a;text-align:right;}
+.ref-style-list small{background:#eaf8f1;color:#138650;border-radius:7px;padding:4px 6px;text-align:center;}
+.ref-ai-card{min-height:190px;}
+.ref-alert-card{min-height:190px;}
+
 </style>
 """,
         unsafe_allow_html=True,
@@ -416,8 +495,8 @@ def brand():
 <div class="planx-brand">
   <div class="planx-brand-mark">↗</div>
   <div>
-    <div class="planx-brand-title">StockDash</div>
-    <div class="planx-brand-sub">Data to Insight.</div>
+    <div class="planx-brand-title">PlanX</div>
+    <div class="planx-brand-sub">Stock Dashboard</div>
   </div>
 </div>
 """,
