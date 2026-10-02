@@ -483,6 +483,43 @@ section[data-testid="stSidebar"] .planx-brand-sub{font-size:10px !important;colo
 .ref-ai-card{min-height:190px;}
 .ref-alert-card{min-height:190px;}
 
+/* Photo reference · 2026-10-02 */
+.stApp{background:#f8fbff !important;}
+.block-container{max-width:1600px !important;padding-top:1.15rem !important;padding-left:1.25rem !important;padding-right:1.25rem !important;}
+section[data-testid="stSidebar"]{background:#f4f7fb !important;border-right:1px solid #e1e8f1 !important;}
+section[data-testid="stSidebar"] .planx-brand-mark{display:none !important;}
+section[data-testid="stSidebar"] .planx-brand-title{font-family:Georgia,serif !important;font-size:32px !important;color:#172033 !important;}
+section[data-testid="stSidebar"] .planx-brand-sub{font-size:9px !important;letter-spacing:.15em !important;text-transform:uppercase !important;color:#475569 !important;}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label{padding:12px 13px !important;border-radius:8px !important;color:#26364f !important;}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] label:has(input:checked){background:#e9eef7 !important;color:#172033 !important;box-shadow:inset 3px 0 #315aa6 !important;}
+.photo-topline{grid-template-columns:auto 1fr auto !important;margin-bottom:10px !important;}
+.photo-tagline{font-size:9px;color:#64748b;margin-left:6px;}
+.ref-brand-main{font-family:Georgia,serif !important;font-size:28px !important;color:#172033 !important;}
+.ref-brand-sub{font-size:10px !important;letter-spacing:.16em !important;color:#27364c !important;}
+.photo-index-grid{grid-template-columns:repeat(5,1fr) !important;gap:10px !important;}
+.ref-index-card{min-height:72px !important;padding:10px 12px !important;border-radius:9px !important;background:#fff !important;}
+.ref-index-value{font-size:18px !important;}
+.ref-spark{height:26px !important;bottom:7px !important;}
+.photo-note{font-size:9px;color:#718096;margin:8px 2px 13px;}
+.photo-flow{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 10px;font-size:9px;color:#7a8798;}
+.photo-flow>span{margin-right:auto;font-weight:700;color:#53657d;}
+.photo-flow b{min-width:82px;text-align:center;background:#eef2f7;border-radius:7px;padding:8px 12px;font-weight:600;}
+.photo-flow b.active{background:#a47a3d;color:#fff;}
+.photo-flow i{font-style:normal;color:#aab2be;}
+.photo-decision-grid{display:grid;grid-template-columns:1.05fr repeat(5,1fr);gap:9px;margin-bottom:12px;}
+.photo-decision-grid .ref-card{min-height:160px !important;padding:12px !important;border-radius:9px !important;}
+.photo-card-label{font-size:10px;font-weight:800;color:#334155;display:flex;justify-content:space-between;}
+.photo-card-label em{font-style:normal;font-size:7px;color:#23845b;background:#edf8f2;border-radius:99px;padding:2px 6px;}
+.photo-score p,.photo-signal p{font-size:8px !important;line-height:1.5 !important;color:#7c8797;margin:7px 0 0;}
+.photo-ring{width:74px;height:74px;margin:9px auto 5px;border-radius:50%;background:conic-gradient(#16794b calc(var(--score)*1%),#e7ebef 0);display:flex;align-items:center;justify-content:center;position:relative;}
+.photo-ring:before{content:"";position:absolute;width:56px;height:56px;border-radius:50%;background:#fff;}
+.photo-ring strong,.photo-ring small{position:relative;z-index:1}.photo-ring strong{font-size:20px}.photo-ring small{font-size:7px;color:#94a3b8;margin-top:10px}
+.photo-signal h4{font-size:11px;margin:10px 0 5px;color:#334155;}
+.photo-bars{height:42px;display:flex;align-items:flex-end;gap:5px;margin-top:9px;}
+.photo-bars i{flex:1;background:#b8c4d8;border-radius:2px 2px 0 0}.photo-bars i:nth-child(1){height:20%}.photo-bars i:nth-child(2){height:35%}.photo-bars i:nth-child(3){height:50%}.photo-bars i:nth-child(4){height:68%}.photo-bars i:nth-child(5){height:82%}
+.photo-bars.green i{background:#128452}.photo-bars.blue i{background:#2f6fd1}
+.ref-stock-price{color:#111827 !important;font-size:24px !important;}
+@media(max-width:1200px){.photo-decision-grid{grid-template-columns:repeat(3,1fr)}.photo-index-grid{grid-template-columns:repeat(2,1fr) !important;}}
 </style>
 """,
         unsafe_allow_html=True,
