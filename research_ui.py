@@ -120,13 +120,14 @@ def render_research(store, state, sample_mode):
 
     st.markdown(
         """
-<div class="ref-topline">
+<div class="ref-topline photo-topline">
   <div class="ref-brand-row">
     <div class="ref-brand-main">PlanX</div>
-    <div class="ref-brand-sub">Stock Dashboard</div>
+    <div class="ref-brand-sub">STOCK INTELLIGENCE</div>
+    <div class="photo-tagline">더 깊은 분석이, 더 나은 투자를</div>
   </div>
-  <div class="ref-search">⌕&nbsp;&nbsp; 종목명 또는 키워드를 검색하세요.</div>
-  <div class="ref-user-meta">2026년 9월 19일 · 시장 데이터</div>
+  <div></div>
+  <div class="ref-user-meta">시장 데이터 · 저장자료 기준</div>
 </div>
 """,
         unsafe_allow_html=True,
@@ -136,16 +137,28 @@ def render_research(store, state, sample_mode):
     cards = [
         _index_card("KOSPI", None, None, []),
         _index_card("KOSDAQ", None, None, []),
-        _index_card("S&P 500", None, None, []),
-        _index_card("NASDAQ", None, None, []),
+        _index_card("USD/KRW", None, None, []),
+        _index_card("WTI", None, None, []),
+        _index_card("GOLD", None, None, []),
     ]
-    promo = """
-<div class="ref-index-card ref-promo-card">
-  <div class="ref-promo-title">좋은 기업이<br>더 좋은 내일을 만듭니다.</div>
-  <div class="ref-promo-sub">Better Investment,<br>A Brighter Tomorrow.</div>
+    st.markdown('<div class="ref-index-grid photo-index-grid">' + "".join(cards) + "</div>", unsafe_allow_html=True)
+
+    readiness = _score_from_data(stocks)
+    st.markdown(
+        f"""
+<div class="photo-note">화면 구성 예시 · 시장 API 연결 전 지수값은 표시하지 않습니다.</div>
+<div class="photo-flow"><span>오늘의 투자판단</span><b>시장</b><i>›</i><b>산업</b><i>›</i><b>기업</b><i>›</i><b class="active">투자판단</b></div>
+<div class="photo-decision-grid">
+  <div class="ref-card photo-score"><div class="photo-card-label">분석 데이터 충족도</div><div class="photo-ring" style="--score:{readiness}"><strong>{readiness}</strong><small>/100</small></div><p>저장된 공식·조사 데이터의 충족도를 표시합니다.</p></div>
+  <div class="ref-card photo-signal"><div class="photo-card-label">▣ 매크로 <em>확인</em></div><h4>금리·유동성 방향</h4><p>거시 데이터 연결 시 시장 환경을 표시합니다.</p><div class="photo-bars"><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="ref-card photo-signal"><div class="photo-card-label">◉ 성장산업 <em>확인</em></div><h4>산업 성장과 투자</h4><p>산업 성장과 주요 기업의 흐름을 함께 봅니다.</p><div class="photo-bars green"><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="ref-card photo-signal"><div class="photo-card-label">▬ 수출 수주 <em>확인</em></div><h4>수출 개선 여부</h4><p>수출·수주 데이터 연결 시 변화 방향을 표시합니다.</p><div class="photo-bars green"><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="ref-card photo-signal"><div class="photo-card-label">▥ 실적 성장 <em>확인</em></div><h4>매출·이익 성장</h4><p>저장된 결산 자료로 성장 흐름을 확인합니다.</p><div class="photo-bars green"><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="ref-card photo-signal"><div class="photo-card-label">↗ 수급 강도 <em>확인</em></div><h4>외국인·기관 수급</h4><p>수급 API 연결 시 방향과 강도를 표시합니다.</p><div class="photo-bars blue"><i></i><i></i><i></i><i></i><i></i></div></div>
 </div>
-"""
-    st.markdown('<div class="ref-index-grid">' + "".join(cards) + promo + "</div>", unsafe_allow_html=True)
+""",
+        unsafe_allow_html=True,
+    )
 
     # Main dashboard: large stock chart, watchlist and investor flow.
     left, middle, right = st.columns([1.75, 1.0, 1.0], gap="small")
